@@ -3,42 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دستیار هوشمند تحلیل موسیقی</title>
+    <title>استودیوی هوشمند و بصری موسیقی</title>
+    <!-- کتابخانه‌های گرافیکی رسم نت و پخش صدا -->
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #f0f2f5; padding: 20px; text-align: center; color: #333; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        body { font-family: Tahoma, sans-serif; background: #f0f2f5; padding: 15px; text-align: center; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; box-sizing: border-box; }
         button { background: #6750A4; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background: #4f378b; }
-        #result { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; text-align: right; line-height: 1.8; white-space: pre-wrap; font-size: 14px; border: 1px solid #eee; }
-        .loading { color: #6750A4; font-weight: bold; }
+        #summaryBox { margin-top: 15px; padding: 12px; background: #f9f9f9; border-radius: 8px; text-align: right; line-height: 1.7; font-size: 14px; border: 1px solid #eee; }
+        
+        .visual-editor { margin-top: 20px; border: 2px solid #6750A4; padding: 15px; border-radius: 10px; background: #ffffff; text-align: right; }
+        #stavesContainer { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; overflow-x: auto; margin-top: 10px; min-height: 150px; }
+        .interactive-notes-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; direction: ltr; justify-content: center; }
+        .note-chip { background: #e8def8; color: #1d192b; border: 1px solid #79747e; padding: 8px 12px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .note-chip input { width: 50px; padding: 3px; margin: 0; text-align: center; border-radius: 4px; border: 1px solid #79747e; font-size: 14px; }
+        .controls-btn { display: flex; gap: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>🎵 دستیار هوشمند تحلیل موسیقی</h2>
-        <p>کلید API، فایل صوتی و ساز دلخواه خود را مشخص کنید</p>
+        <h2>🎵 استودیوی تعاملی و بصری تحلیل موسیقی</h2>
+        <p>فایل صوتی را بارگذاری کنید تا نت‌ها مستقیماً روی خطوط حامل ترسیم و قابل ویرایش شوند</p>
 
         <input type="password" id="apiKey" placeholder="کلید API گوگل AI Studio را وارد کنید">
-        
         <input type="file" id="audioFile" accept="audio/*">
 
         <select id="targetInstrument">
-            <option value="گیتار">ساز دلخواه برای ادامه: گیتار</option>
-            <option value="پیانو">ساز دلخواه برای ادامه: پیانو</option>
-            <option value="ویولن">ساز دلخواه برای ادامه: ویولن</option>
-            <option value="سنتور">ساز دلخواه برای ادامه: سنتور</option>
-            <option value="تار / سه تار">ساز دلخواه برای ادامه: تار / سه تار</option>
-            <option value="کیبورد / سینتی‌سایزر">ساز دلخواه برای ادامه: کیبورد</option>
+            <option value="گیتار">ساز برای ادامه: گیتار</option>
+            <option value="پیانو">ساز برای ادامه: پیانو</option>
+            <option value="ویولن">ساز برای ادامه: ویولن</option>
+            <option value="سنتور">ساز برای ادامه: سنتور</option>
+            <option value="تار / سه تار">ساز برای ادامه: تار / سه تار</option>
         </select>
         
-        <button onclick="analyzeMusic()">🚀 تحلیل قطعه و ارائه راهنمایی</button>
+        <button onclick="analyzeAndRenderVisual()">🚀 استخراج گرافیکی نت‌ها و ترسیم روی خط حامل</button>
 
-        <div id="result">وضعیت: آماده برای دریافت قطعه موسیقی...</div>
+        <div id="summaryBox">وضعیت: منتظر دریافت فایل صوتی...</div>
+
+        <!-- ویرایشگر بصری نت‌ها -->
+        <div class="visual-editor" id="visualSection" style="display:none;">
+            <h3>🎼 خطوط حامل و نت‌های استخراج‌شده</h3>
+            <p style="font-size: 12px; color: #666;">نت‌های زیر به صورت بصری استخراج شده‌اند. می‌توانید نام آن‌ها را تغییر دهید تا روی خط حامل به‌روزرسانی شوند:</p>
+            
+            <div id="stavesContainer"></div>
+
+            <div class="interactive-notes-bar" id="notesInteractiveList"></div>
+
+            <div class="controls-btn">
+                <button onclick="playNotesAudio()" style="background: #2e7d32;">▶️ پخش صوتی قطعه ویرایش‌شده</button>
+                <button onclick="addNoteToList()" style="background: #0288d1;">➕ افزودن نت جدید</button>
+            </div>
+        </div>
     </div>
 
     <script>
+        let extractedNotes = ["C4", "E4", "G4", "B4", "C5"];
+
         async function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -48,51 +72,39 @@
             });
         }
 
-        async function analyzeMusic() {
+        async function analyzeAndRenderVisual() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const audioFileInput = document.getElementById('audioFile');
             const targetInstrument = document.getElementById('targetInstrument').value;
-            const resultDiv = document.getElementById('result');
+            const summaryBox = document.getElementById('summaryBox');
 
-            if (!apiKey) {
-                alert('لطفاً کلید API را وارد کنید!');
-                return;
-            }
-
-            if (audioFileInput.files.length === 0) {
-                alert('لطفاً یک فایل صوتی انتخاب کنید!');
+            if (!apiKey || audioFileInput.files.length === 0) {
+                alert('لطفاً کلید API و فایل صوتی را وارد کنید!');
                 return;
             }
 
             const audioFile = audioFileInput.files[0];
-            resultDiv.innerHTML = '<span class="loading">⏳ در حال تبدیل فایل صوتی و ارسال به هوش مصنوعی گوگل... لطفاً شکیبا باشید.</span>';
+            summaryBox.innerHTML = '⏳ در حال پردازش صوتی و دریافت ساختار نت‌ها از هوش مصنوعی...';
 
             try {
                 const base64Audio = await fileToBase64(audioFile);
                 const mimeType = audioFile.type || 'audio/mp3';
 
-                const promptText = `توضیحات فنی پروژه تحلیل موسیقی:
-به این قطعه صوتی کوتاه با دقت گوش بده و موارد زیر را به صورت مرحله به مرحله و شفاف تحلیل کن:
-۱. گام (Key)، ریتم (Tempo/BPM) و فضای کلی قطعه را مشخص کن.
-۲. نت‌ها و آکوردهای اصلی به‌کاررفته در این قطعه را جداگانه فهرست کن.
-۳. اجزا و سازهای شنیده‌شده را تفکیک و نام ببر.
-۴. راهنمایی جامع و آکوردهای پیشنهادی ارائه بده برای اینکه چطور می‌توانیم ادامه این قطعه موسیقی را با ساز "${targetInstrument}" بنویسیم و بنوازیم.`;
+                const promptText = `فایل صوتی را تحلیل کن و خروجی را دقیقاً به فرمت JSON زیر بفرست (بدون هیچ متن اضافه‌ای):
+{
+  "summary": "توضیح مختصر تحلیل گام و ریتم به فارسی",
+  "notes": ["C4", "E4", "G4", "A4", "B4"]
+}
+نکته: آرایه notes باید شامل لیست انگلیسی نت‌های اصلی قطعه باشد (مانند C4, D4, E4, F4, G4).`;
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
                                 { text: promptText },
-                                {
-                                    inline_data: {
-                                        mime_type: mimeType,
-                                        data: base64Audio
-                                    }
-                                }
+                                { inline_data: { mime_type: mimeType, data: base64Audio } }
                             ]
                         }]
                     })
@@ -100,17 +112,111 @@
 
                 const data = await response.json();
 
-                if (data.error) {
-                    resultDiv.innerHTML = `❌ خطایی رخ داد: ${data.error.message}`;
-                } else if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    resultDiv.innerHTML = "### 🎼 نتیجه تحلیل و پیشنهاد هوش مصنوعی:\n\n" + data.candidates[0].content.parts[0].text;
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    let rawText = data.candidates[0].content.parts[0].text.trim();
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    try {
+                        const parsed = JSON.parse(rawText);
+                        summaryBox.innerHTML = "<b>گزارش تحلیل:</b> " + parsed.summary;
+                        if(parsed.notes && parsed.notes.length > 0) {
+                            extractedNotes = parsed.notes;
+                        }
+                    } catch(e) {
+                        summaryBox.innerHTML = "<b>تحلیل متنی:</b> " + rawText;
+                    }
+
+                    document.getElementById('visualSection').style.display = 'block';
+                    drawStaves();
+                    renderInteractiveChips();
                 } else {
-                    resultDiv.innerHTML = "❌ پاسخی از مدل دریافت نشد. لطفاً دوباره تلاش کنید.";
+                    summaryBox.innerHTML = "❌ خطایی در دریافت پاسخ رخ داد.";
                 }
 
             } catch (err) {
-                resultDiv.innerHTML = `❌ خطا در ارتباط: ${err.message}`;
+                summaryBox.innerHTML = `❌ خطا: ${err.message}`;
             }
+        }
+
+        function drawStaves() {
+            const container = document.getElementById('stavesContainer');
+            container.innerHTML = '';
+
+            try {
+                const { Renderer, Stave, StaveNote, Voice, Formatter } = Vex.Flow;
+                const renderer = new Renderer(container, Renderer.Backends.SVG);
+                renderer.resize(600, 140);
+                const context = renderer.getContext();
+
+                const stave = new Stave(10, 10, 560);
+                stave.addClef("treble").addTimeSignature("4/4");
+                stave.setContext(context).draw();
+
+                const vexNotes = extractedNotes.map(n => {
+                    let formatted = n.trim().toLowerCase().replace(/([a-g])(#|b)?(\d)/, "\$1\$2/\$3");
+                    if(!formatted.includes('/')) formatted = "c/4";
+                    try {
+                        return new StaveNote({ keys: [formatted], duration: "q" });
+                    } catch(e) {
+                        return new StaveNote({ keys: ["c/4"], duration: "q" });
+                    }
+                }).slice(0, 4);
+
+                if(vexNotes.length > 0) {
+                    const voice = new Voice({ num_beats: vexNotes.length, beat_value: 4 });
+                    voice.addTickables(vexNotes);
+                    new Formatter().joinVoices([voice]).format([voice], 480);
+                    voice.draw(context, stave);
+                }
+            } catch(err) {
+                container.innerHTML = "<p style='color:red;'>خطا در ترسیم نت‌ها روی خط حامل.</p>";
+            }
+        }
+
+        function renderInteractiveChips() {
+            const container = document.getElementById('notesInteractiveList');
+            container.innerHTML = '';
+
+            extractedNotes.forEach((note, idx) => {
+                const chip = document.createElement('div');
+                chip.className = 'note-chip';
+                chip.innerHTML = `
+                    <span>نت ${idx + 1}:</span>
+                    <input type="text" value="${note}" onchange="updateNote(${idx}, this.value)">
+                    <span onclick="deleteNote(${idx})" style="color:red;cursor:pointer;font-weight:bold;">✕</span>
+                `;
+                container.appendChild(chip);
+            });
+        }
+
+        function updateNote(index, newVal) {
+            extractedNotes[index] = newVal.trim();
+            drawStaves();
+        }
+
+        function deleteNote(index) {
+            extractedNotes.splice(index, 1);
+            drawStaves();
+            renderInteractiveChips();
+        }
+
+        function addNoteToList() {
+            extractedNotes.push("G4");
+            drawStaves();
+            renderInteractiveChips();
+        }
+
+        async function playNotesAudio() {
+            await Tone.start();
+            const synth = new Tone.Synth().toDestination();
+            const now = Tone.now();
+            extractedNotes.forEach((note, i) => {
+                try {
+                    synth.triggerAttackRelease(note, "8n", now + i * 0.5);
+                } catch(e) {
+                    synth.triggerAttackRelease("C4", "8n", now + i * 0.5);
+                }
+            });
         }
     </script>
 
